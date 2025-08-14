@@ -28,34 +28,40 @@ export default async function Page({
 
   return (
     <div>
-      <section className="section hero-bg">
-        <div className="container grid md:grid-cols-2 gap-8 items-center">
-          <div className="space-y-4">
-            <span className="badge-orange">Programa de becas</span>
-            <h1>{title}</h1>
-            <p className="text-lg">{subtitle}</p>
-            <div className="flex gap-3">
-              <Link href={`/${locale}/donar`} className="btn btn-primary">
-                {cta}
-              </Link>
-              <a href="#como" className="btn btn-outline">
-                Cómo ayudamos
-              </a>
-            </div>
+      <section
+  className="section relative bg-cover bg-center"
+  style={{ backgroundImage: "url('/banner.png')" }}  // ← cambia .png/.jpg según corresponda
+>
+  {/* overlay para legibilidad del texto */}
+  <div
+    aria-hidden
+    className="absolute inset-0 bg-gradient-to-r from-white/85 via-white/70 to-white/10"
+  />
+
+  <div className="container relative z-10 grid md:grid-cols-2 gap-8 items-center">
+    <div className="space-y-4">
+      <span className="badge-orange">Programa de becas</span>
+      <h1>{title}</h1>
+      <p className="text-lg">{subtitle}</p>
+      <div className="flex gap-3">
+        <Link href={`/${locale}/donar`} className="btn btn-primary">{cta}</Link>
+        <a href="#como" className="btn btn-outline">Cómo ayudamos</a>
+      </div>
+    </div>
+
+    <div className="card">
+      <h3 className="mb-2">Impacto</h3>
+      <div className="grid grid-cols-3 gap-4 text-center">
+        {impact.slice(0,3).map((item:any, i:number) => (
+          <div key={i} className="p-3 rounded-xl bg-white shadow-inner">
+            <div className="text-3xl font-extrabold">{item.value}</div>
+            <div className="text-xs text-slate-500">{item.label}</div>
           </div>
-          <div className="card">
-            <h3 className="mb-2">Impacto</h3>
-            <div className="grid grid-cols-3 gap-4 text-center">
-              {impact.slice(0, 3).map((item: any, i: number) => (
-                <div key={i} className="p-3 rounded-xl bg-white shadow-inner">
-                  <div className="text-3xl font-extrabold">{item.value}</div>
-                  <div className="text-xs text-slate-500">{item.label}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
+        ))}
+      </div>
+    </div>
+  </div>
+</section>
 
       <section id="como" className="section">
         <div className="container grid md:grid-cols-3 gap-6">
