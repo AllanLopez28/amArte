@@ -1,4 +1,6 @@
+
 import Link from 'next/link'
+import Image from 'next/image'
 import { Locale } from '@/lib/i18n'
 
 export default function Navbar({ locale }: { locale: Locale }) {
@@ -7,7 +9,7 @@ export default function Navbar({ locale }: { locale: Locale }) {
     <header className="border-b border-slate-200 bg-white/80 backdrop-blur">
       <div className="container flex items-center justify-between py-4">
         <Link href={base} className="flex items-center gap-3 font-extrabold text-xl">
-          <img src="/logo-amarte.png" alt="Fundación logo" width={130} height={40} />
+          <Image src="/logo-amarte.png" alt="Fundación logo" width={130} height={40} priority />
         </Link>
         <nav className="hidden md:flex items-center gap-6 text-sm">
           <Link href={`${base}`} className="link-accent">Inicio</Link>
