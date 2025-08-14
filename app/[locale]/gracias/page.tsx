@@ -10,7 +10,9 @@ export default async function GraciasPage({
       <div className="container text-center">
         <h1>¡Gracias por tu apoyo! ❤️</h1>
         <p className="mt-2">Pronto habilitaremos pagos reales con Stripe y PayPal.</p>
-        <Link href={`/${locale}`} className="btn btn-primary mt-6">Volver al inicio</Link>
+        <Link href={`/${locale}`} className="btn btn-primary mt-6">
+          Volver al inicio
+        </Link>
       </div>
     </div>
   )

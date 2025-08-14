@@ -5,21 +5,26 @@ import { homeQuery } from '@/lib/sanity.queries'
 
 export default async function Page({
   params,
-}: { params: Promise<{ locale: Locale }> }) {
+}: {
+  params: Promise<{ locale: Locale }>
+}) {
   const { locale } = await params
   const t = await getDictionary(locale)
 
   let data: any = null
-  try { data = await sanityClient.fetch(homeQuery, { lang: locale }) } catch {}
+  try {
+    data = await sanityClient.fetch(homeQuery, { lang: locale })
+  } catch {}
 
   const title = data?.heroTitle || t.hero.title
   const subtitle = data?.heroSubtitle || t.hero.subtitle
   const cta = data?.heroCta || t.hero.cta
-  const impact = data?.impact ?? [
-    { label: 'Becas', value: 120 },
-    { label: 'Kits escolares', value: 350 },
-    { label: 'Comunidades', value: 24 },
-  ]
+  const impact =
+    data?.impact ?? [
+      { label: 'Becas', value: 120 },
+      { label: 'Kits escolares', value: 350 },
+      { label: 'Comunidades', value: 24 },
+    ]
 
   return (
     <div>
@@ -30,14 +35,18 @@ export default async function Page({
             <h1>{title}</h1>
             <p className="text-lg">{subtitle}</p>
             <div className="flex gap-3">
-              <Link href={`/${locale}/donar`} className="btn btn-primary">{cta}</Link>
-              <a href="#como" className="btn btn-outline">Cómo ayudamos</a>
+              <Link href={`/${locale}/donar`} className="btn btn-primary">
+                {cta}
+              </Link>
+              <a href="#como" className="btn btn-outline">
+                Cómo ayudamos
+              </a>
             </div>
           </div>
           <div className="card">
             <h3 className="mb-2">Impacto</h3>
             <div className="grid grid-cols-3 gap-4 text-center">
-              {impact.slice(0,3).map((item:any, i:number) => (
+              {impact.slice(0, 3).map((item: any, i: number) => (
                 <div key={i} className="p-3 rounded-xl bg-white shadow-inner">
                   <div className="text-3xl font-extrabold">{item.value}</div>
                   <div className="text-xs text-slate-500">{item.label}</div>
@@ -69,9 +78,16 @@ export default async function Page({
         <div className="container text-center">
           <h2>¿Listo para ayudar?</h2>
           <p>Tu aporte crea oportunidades reales.</p>
-          <Link href={`/${locale}/donar`} className="btn btn-primary mt-4">Donar</Link>
+          <Link href={`/${locale}/donar`} className="btn btn-primary mt-4">
+            Donar
+          </Link>
         </div>
       </section>
     </div>
   )
+}
+
+// SSG para /es y /en (ajusta si manejas más idiomas)
+export async function generateStaticParams() {
+  return [{ locale: 'es' as Locale }, { locale: 'en' as Locale }]
 }
