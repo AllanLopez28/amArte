@@ -1,0 +1,54 @@
+﻿# Node / paquetes
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+bun.lockb
+
+# Next.js
+.next/
+.turbo/
+out/
+dist/
+build/
+.eslintcache
+
+# Entornos (NO subir credenciales)
+.env
+.env.*
+!.env.example
+
+# Vercel (config local)
+.vercel/
+
+# Cobertura / tests
+coverage/
+.nyc_output/
+
+# Cachés temporales
+.tmp/
+temp/
+tmp/
+
+# SO / editores
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# macOS (por si abres en Mac)
+.DS_Store
+
+# VS Code (permitiendo configs útiles)
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/tasks.json
+!.vscode/launch.json
+
+# Visual Studio (si lo abres con VS)
+.vs/
+*.user
+*.suo
+*.userosscache
