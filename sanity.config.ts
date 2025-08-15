@@ -11,7 +11,7 @@ const apiVersion = '2023-10-01' // o '2024-05-01', cualquier fecha válida de ve
 
 export default defineConfig({
   basePath: '/studio',
-  projectId: '<w6hsf9vx>',   // ej: 'w6hsf9vx'
+  projectId: '<w6hsf9vx>', 
   dataset: 'production',
   schema,
   plugins: [
