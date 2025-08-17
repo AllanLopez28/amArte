@@ -1,10 +1,28 @@
+// app/[locale]/testimonios/page.tsx
 import Image from 'next/image'
 import { Locale } from '@/lib/i18n'
+import { sanityClient } from '@/lib/sanity.client'
+import { testimonialsQuery } from '@/lib/sanity.queries'
 
 export default async function Page({
   params,
 }: { params: Promise<{ locale: Locale }> }) {
   const { locale } = await params
+
+  // 1) Traer testimonios desde Sanity (ES/EN según locale)
+  let testimonials: Array<{
+    name: string
+    role?: string
+    quote: string
+    photoUrl?: string
+  }> = []
+
+  try {
+    testimonials = await sanityClient.fetch(testimonialsQuery, { lang: locale })
+    if (!Array.isArray(testimonials)) testimonials = []
+  } catch {
+    testimonials = []
+  }
 
   return (
     <section className="section">
@@ -19,35 +37,45 @@ export default async function Page({
           </p>
         </header>
 
-        <div className="bg-white rounded-2xl shadow-lg p-6 md:p-8 grid md:grid-cols-2 gap-6 items-center hover:shadow-xl transition-shadow duration-300">
-          {/* Imagen */}
-          <div className="overflow-hidden rounded-xl relative h-[260px] md:h-[340px]">
-            <Image
-              src="/escuela1.png"
-              alt="Javier Martínez - Becario"
-              fill
-              className="object-cover rounded-xl transition-transform duration-500 hover:scale-105"
-              priority={false}
-              sizes="(min-width: 768px) 50vw, 100vw"
-            />
-          </div>
+        {/* 2) Listado dinámico */}
+        {testimonials.length > 0 ? (
+          <div className="flex flex-col space-y-6">
+            {testimonials.map((t, i) => (
+              <article
+                key={i}
+                className="bg-white rounded-2xl shadow-lg p-6 md:p-8 flex flex-col md:flex-row gap-6 items-start hover:shadow-xl transition-shadow duration-300"
+              >
+                {/* Imagen fija a la izquierda */}
+                <div className="relative w-full md:w-72 h-60 md:h-56 shrink-0 overflow-hidden rounded-xl">
 
-          {/* Texto */}
-          <div>
-            <p className="text-lg text-slate-700 italic leading-relaxed">
-              &ldquo;Nunca imaginé que tendría la oportunidad de estudiar fuera de El Salvador.
-              Gracias al apoyo de <span className="font-semibold">Fundación EducaSV</span>, obtuve
-              una beca para cursar un programa de ciencias en una universidad en Canadá. La
-              fundación me ayudó con el proceso de aplicación, los costos iniciales y hasta con
-              talleres para adaptarme culturalmente. Hoy estoy ampliando mis conocimientos y,
-              cuando regrese, quiero ponerlos al servicio de mi comunidad. Este sueño se hizo
-              realidad gracias a quienes creyeron en mí.&rdquo;
-            </p>
-            <p className="mt-4 font-bold text-brand-blue">
-              — Javier Martínez, becario en el extranjero
-            </p>
+                  <Image
+                    src={t.photoUrl || '/escuela1.png'}
+                    alt={t.name || 'Fotografía de beneficiario'}
+                    fill
+                    className="object-cover transition-transform duration-500 hover:scale-105"
+                    sizes="(max-width: 768px) 100vw, 224px"
+                    priority={i < 2}
+                  />
+                </div>
+
+                {/* Texto a la derecha */}
+                <div className="flex-1">
+                  <p className="text-lg text-slate-700 italic leading-relaxed">
+                    &ldquo;{t.quote}&rdquo;
+                  </p>
+                  <p className="mt-4 font-bold text-brand-blue">
+                    — {t.name}{t.role ? `, ${t.role}` : ''}
+                  </p>
+                </div>
+              </article>
+            ))}
           </div>
-        </div>
+        ) : (
+          <div className="text-center text-slate-500">
+            Aún no hay testimonios publicados.
+          </div>
+        )}
+
       </div>
     </section>
   )
