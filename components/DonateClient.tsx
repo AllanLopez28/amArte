@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { loadStripe } from '@stripe/stripe-js'
 
 type Locale = 'es' | 'en'
 type Dict = any
@@ -12,14 +13,8 @@ type Props = {
   t: Dict
 }
 
-// --- CONFIG: solo paypal.me desde ENV ---
-const PAYPAL_ME = process.env.NEXT_PUBLIC_PAYPAL_ME // ej: https://paypal.me/Usuario
-const CURRENCY = 'USD'
+const STRIPE_PK = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
 
-const paypalUrl = (amount: number) =>
-  `${String(PAYPAL_ME).replace(/\/$/, '')}/${amount}?currency_code=${CURRENCY}`
-
-// --- Tiers estáticos ---
 const TIERS_ONCE = [
   { amount: 25, label: 'Útiles' },
   { amount: 100, label: 'Mensualidad completa' },
@@ -39,32 +34,52 @@ export default function DonateClient({ locale, t }: Props) {
     label?: string
   } | null>(null)
 
+  const stripeMissing = !STRIPE_PK
+
   const handleSelect = (
     amount: number,
     period: 'once' | 'monthly',
     label?: string
   ) => setSelected({ amount, period, label })
 
-  const handleSimulate = () => {
-    if (!selected || !PAYPAL_ME) return
-    window.open(paypalUrl(selected.amount), '_blank', 'noopener,noreferrer')
-    router.push(`/${locale}/gracias`)
-  }
+  const handleStripe = async () => {
+    if (!selected || !STRIPE_PK) return
 
-  const paypalMissing = !PAYPAL_ME
+    // 1) Crear sesión en tu API
+    const res = await fetch('/api/checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        amount: selected.amount,
+        period: selected.period,
+        locale,
+      }),
+    })
+
+    if (!res.ok) {
+      alert('Ocurrió un problema creando la sesión de pago.')
+      return
+    }
+
+    const { id } = await res.json()
+
+    // 2) Redirigir a Stripe Checkout
+    const stripe = await loadStripe(STRIPE_PK)
+    const { error } = await stripe!.redirectToCheckout({ sessionId: id })
+    if (error) alert(error.message)
+  }
 
   return (
     <div className="section">
       <div className="container">
         <h1 className="mb-2">{t.donate.title}</h1>
-        <p className="mb-6">{t.donate.subtitle}</p>
+        <p className="mb-8">{t.donate.subtitle}</p>
 
-        {paypalMissing && (
+        {stripeMissing && (
           <div className="mb-6 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-amber-800">
             <strong>Configuración requerida:</strong> define
-            {' '}<code>NEXT_PUBLIC_PAYPAL_ME</code>{' '}
-            (por ejemplo <code>https://paypal.me/Usuario</code>) en tu
-            <span className="font-semibold"> .env.local</span> y en Vercel.
+            {' '}<code>NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY</code> y
+            {' '}<code>STRIPE_SECRET_KEY</code> en tu entorno.
           </div>
         )}
 
@@ -89,7 +104,7 @@ export default function DonateClient({ locale, t }: Props) {
               })}
             </div>
             <p className="text-xs text-slate-500">
-              Selecciona un monto y luego presiona <strong>Simular donación</strong>.
+              Selecciona un monto y presiona <strong>Donar con tarjeta</strong>.
             </p>
           </div>
 
@@ -113,7 +128,7 @@ export default function DonateClient({ locale, t }: Props) {
               })}
             </div>
             <p className="text-xs text-slate-500">
-              (Para recurrencia real con PayPal, luego añadiremos suscripciones).
+              La recurrencia se procesa automáticamente cada mes.
             </p>
           </div>
         </div>
@@ -122,21 +137,19 @@ export default function DonateClient({ locale, t }: Props) {
         <div className="mt-8 flex flex-wrap gap-3 items-center">
           <button
             type="button"
-            onClick={handleSimulate}
-            disabled={!selected || paypalMissing}
+            onClick={handleStripe}
+            disabled={!selected || stripeMissing}
             className={`btn btn-primary ${
-              !selected || paypalMissing ? 'opacity-50 cursor-not-allowed' : ''
+              !selected || stripeMissing ? 'opacity-50 cursor-not-allowed' : ''
             }`}
             title={
               !selected
                 ? 'Selecciona un monto'
-                : paypalMissing
-                ? 'Configura NEXT_PUBLIC_PAYPAL_ME'
-                : `Simular donación · $${selected.amount}`
+                : `Donar con tarjeta · $${selected.amount}`
             }
           >
             {selected
-              ? `Simular donación · $${selected.amount}`
+              ? `Donar con tarjeta · $${selected.amount}`
               : 'Selecciona un monto'}
           </button>
 
@@ -146,8 +159,8 @@ export default function DonateClient({ locale, t }: Props) {
         </div>
 
         <p className="mt-6 text-sm text-slate-500">
-          * Simulación: se abrirá <strong>PayPal.Me</strong> en una pestaña nueva con el monto elegido
-          y te enviaremos a la página de <strong>Gracias</strong>.
+          * Procesado de forma segura por <strong>Stripe Checkout</strong>. No almacenamos
+          datos de tarjeta en nuestros servidores.
         </p>
       </div>
     </div>
